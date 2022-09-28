@@ -61,8 +61,7 @@ const parseChatTimestamp = (timestamp: string) => {
 
 // Parse a timestamp from Google Hangouts, which is the epoch time in microseconds
 const parseHangoutsTimestamp = (timestamp: number) => {
-  // TODO: Math.floor or Math.round?
-  return new Date(Math.floor(timestamp / 1000000) * 1000);
+  return new Date(Math.round(timestamp / 1000000) * 1000);
 };
 
 const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
