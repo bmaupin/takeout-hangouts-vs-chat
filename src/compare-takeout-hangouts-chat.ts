@@ -56,12 +56,12 @@ const readJSONFile = async (pathToFile: string) => {
 // Parse a timestamp from Google Chat data, e.g. "Wednesday, September 30, 2015 at 5:53:40 PM UTC"
 // NOTE the timestamp must be in English, otherwise the parsing will fail
 const parseChatTimestamp = (timestamp: string) => {
-  return new Date(timestamp.replace('at ', ''));
+  return Number(new Date(timestamp.replace('at ', '')));
 };
 
 // Parse a timestamp from Google Hangouts, which is the epoch time in microseconds
 const parseHangoutsTimestamp = (timestamp: number) => {
-  return new Date(Math.round(timestamp / 1000000) * 1000);
+  return Math.round(timestamp / 1000000) * 1000;
 };
 
 const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
@@ -78,10 +78,8 @@ const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
 
       if (
         // TODO: need to convert date in order to compare
-        // parseHangoutsTimestamp(hangoutsEvent.timestamp) ===
-        // parseChatTimestamp(chatMessage.created_date)
-        // TODO: reenable this
-        //   &&
+        parseHangoutsTimestamp(hangoutsEvent.timestamp) ===
+          parseChatTimestamp(chatMessage.created_date) &&
         hangoutsEvent.chat_message?.message_content.segment &&
         hangoutsEvent.chat_message?.message_content.segment[0].text ===
           chatMessage.text
