@@ -24,6 +24,9 @@ const main = async () => {
   console.log(`Found ${chatGroups.length} Chat groups`);
 
   for (const chatGroup of chatGroups) {
+    // TODO: remove this
+    console.log('chatGroup=', chatGroup);
+    let matchedCount = 0;
     // TODO: remove this restriction
     if (chatGroup.startsWith('DM')) {
       const chatGroupMessages = await readJSONFile(
@@ -37,11 +40,14 @@ const main = async () => {
 
       for (const chatMessage of chatGroupMessages.messages) {
         if (chatMessage.text) {
-          isChatMessageInHangoutsData(chatMessage, hangoutsConversations);
+          if (isChatMessageInHangoutsData(chatMessage, hangoutsConversations)) {
+            matchedCount++;
+          }
         }
       }
     }
     // TODO: remove this once we get it working
+    console.log('matchedCount=', matchedCount);
     break;
   }
 };
@@ -61,7 +67,7 @@ const parseChatTimestamp = (timestamp: string) => {
 
 // Parse a timestamp from Google Hangouts, which is the epoch time in microseconds
 const parseHangoutsTimestamp = (timestamp: number) => {
-  return Math.round(timestamp / 1000000) * 1000;
+  return Math.floor(timestamp / 1000000) * 1000;
 };
 
 const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
@@ -77,9 +83,11 @@ const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
       // }
 
       if (
-        // TODO: need to convert date in order to compare
-        parseHangoutsTimestamp(hangoutsEvent.timestamp) ===
-          parseChatTimestamp(chatMessage.created_date) &&
+        // TODO: timestamps can be rounded up or down? this seems to work, but keep it disabled for now
+        // (parseHangoutsTimestamp(hangoutsEvent.timestamp) ===
+        //   parseChatTimestamp(chatMessage.created_date) ||
+        //   parseHangoutsTimestamp(hangoutsEvent.timestamp) + 1000 ===
+        //     parseChatTimestamp(chatMessage.created_date)) &&
         hangoutsEvent.chat_message?.message_content.segment &&
         hangoutsEvent.chat_message?.message_content.segment[0].text ===
           chatMessage.text
