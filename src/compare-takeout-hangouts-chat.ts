@@ -57,8 +57,7 @@ const readJSONFile = async (pathToFile: string) => {
   return JSON.parse(rawHangoutsFile);
 };
 
-// const readTakeout;
-
+// TODO: move timestamp functions below next function
 // Parse a timestamp from Google Chat data, e.g. "Wednesday, September 30, 2015 at 5:53:40 PM UTC"
 // NOTE the timestamp must be in English, otherwise the parsing will fail
 const parseChatTimestamp = (timestamp: string) => {
@@ -67,7 +66,17 @@ const parseChatTimestamp = (timestamp: string) => {
 
 // Parse a timestamp from Google Hangouts, which is the epoch time in microseconds
 const parseHangoutsTimestamp = (timestamp: number) => {
-  return Math.floor(timestamp / 1000000) * 1000;
+  return timestamp / 1000;
+};
+
+// Convert timestamps and compare them; they can differ by up to 2 seconds 🤷‍♂️
+const doTimeStampsMatch = (chatMessage: any, hangoutsEvent: any) => {
+  return (
+    Math.abs(
+      parseHangoutsTimestamp(hangoutsEvent.timestamp) -
+        parseChatTimestamp(chatMessage.created_date)
+    ) < 2000
+  );
 };
 
 const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
@@ -83,11 +92,7 @@ const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
       // }
 
       if (
-        // TODO: timestamps can be rounded up or down? this seems to work, but keep it disabled for now
-        // (parseHangoutsTimestamp(hangoutsEvent.timestamp) ===
-        //   parseChatTimestamp(chatMessage.created_date) ||
-        //   parseHangoutsTimestamp(hangoutsEvent.timestamp) + 1000 ===
-        //     parseChatTimestamp(chatMessage.created_date)) &&
+        doTimeStampsMatch(chatMessage, hangoutsEvent) &&
         joinHangoutsMessageSegments(hangoutsEvent) === chatMessage.text
       ) {
         console.log(hangoutsEvent);
