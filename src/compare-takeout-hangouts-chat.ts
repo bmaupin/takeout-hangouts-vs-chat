@@ -3,6 +3,34 @@
 import { readdir, readFile } from 'fs/promises';
 import path from 'path';
 
+interface GoogleChatMessageAnnotation {
+  url_metadata: {
+    url: {
+      private_do_not_access_or_else_safe_url_wrapped_value: string;
+    };
+  };
+}
+
+interface GoogleChatMessage {
+  annotations?: GoogleChatMessageAnnotation[];
+  created_date: string;
+  text: string;
+}
+
+interface HangoutsMessageSegment {
+  text: string;
+  type: string;
+}
+
+interface HangoutsEvent {
+  chat_message?: {
+    message_content: {
+      segment: HangoutsMessageSegment[];
+    };
+  };
+  timestamp: number;
+}
+
 const main = async () => {
   if (process.argv.length !== 3) {
     console.log('Error: Please provide the path to the Takeout directory');
@@ -70,7 +98,10 @@ const parseHangoutsTimestamp = (timestamp: number) => {
 };
 
 // Convert timestamps and compare them; they can differ by up to 2 seconds 🤷‍♂️
-const doTimeStampsMatch = (chatMessage: any, hangoutsEvent: any) => {
+const doTimeStampsMatch = (
+  chatMessage: GoogleChatMessage,
+  hangoutsEvent: HangoutsEvent
+) => {
   return (
     Math.abs(
       parseHangoutsTimestamp(hangoutsEvent.timestamp) -
@@ -79,7 +110,10 @@ const doTimeStampsMatch = (chatMessage: any, hangoutsEvent: any) => {
   );
 };
 
-const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
+const isChatMessageInHangoutsData = (
+  chatMessage: GoogleChatMessage,
+  hangoutsData: any
+) => {
   for (const hangoutsConversation of hangoutsData.conversations) {
     for (const hangoutsEvent of hangoutsConversation.events) {
       // console.log('hangoutsEvent=', hangoutsEvent);
@@ -107,10 +141,12 @@ const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
 };
 
 // TODO: remove line breaks ("type": "LINE_BREAK",) altogether?
-const joinHangoutsMessageSegments = (hangoutsEvent: any): string => {
-  return hangoutsEvent.chat_message?.message_content.segment
-    ?.map((segment: any) => segment.text)
-    .join('');
+const joinHangoutsMessageSegments = (hangoutsEvent: HangoutsEvent): string => {
+  return (
+    hangoutsEvent.chat_message?.message_content.segment
+      ?.map((segment: any) => segment.text)
+      .join('') || ''
+  );
 };
 
 main();
