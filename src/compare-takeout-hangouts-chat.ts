@@ -67,7 +67,20 @@ const main = async () => {
       );
 
       for (const chatMessage of chatGroupMessages.messages as GoogleChatMessage[]) {
-        if (chatMessage.text) {
+        if (
+          chatMessage.text &&
+          // Filter out Hangouts calls after the Chat migration
+          !chatMessage.text.startsWith(
+            'System message: A call has been attempted from Hangouts.'
+          ) &&
+          !chatMessage.text.startsWith(
+            'Message système : Vous avez essayé de passer un appel à partir de Hangouts.'
+          ) &&
+          // Filter out links to Hangouts calls
+          !chatMessage.annotations?.[0].url_metadata.url.private_do_not_access_or_else_safe_url_wrapped_value.startsWith(
+            'https://hangouts.google.com'
+          )
+        ) {
           if (isChatMessageInHangoutsData(chatMessage, hangoutsConversations)) {
             matchedCount++;
           }
