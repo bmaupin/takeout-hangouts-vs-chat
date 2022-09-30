@@ -66,7 +66,7 @@ const main = async () => {
         )
       );
 
-      for (const chatMessage of chatGroupMessages.messages) {
+      for (const chatMessage of chatGroupMessages.messages as GoogleChatMessage[]) {
         if (chatMessage.text) {
           if (isChatMessageInHangoutsData(chatMessage, hangoutsConversations)) {
             matchedCount++;
@@ -90,19 +90,10 @@ const isChatMessageInHangoutsData = (
   hangoutsData: any
 ) => {
   for (const hangoutsConversation of hangoutsData.conversations) {
-    for (const hangoutsEvent of hangoutsConversation.events) {
-      // console.log('hangoutsEvent=', hangoutsEvent);
-      // break;
-      // TODO: need to handle Hangouts message segments
-
-      // if (!hangoutsEvent.chat_message?.message_content.segment) {
-      //   console.log('hangoutsEvent=', hangoutsEvent);
-      //   break;
-      // }
-
+    for (const hangoutsEvent of hangoutsConversation.events as HangoutsEvent[]) {
       if (
         doTimeStampsMatch(chatMessage, hangoutsEvent) &&
-        joinHangoutsMessageSegments(hangoutsEvent) === chatMessage.text
+        doesMessageTextMatch(chatMessage, hangoutsEvent)
       ) {
         console.log(hangoutsEvent);
         console.log(hangoutsEvent.chat_message?.message_content.segment);
@@ -119,7 +110,7 @@ const isChatMessageInHangoutsData = (
 const doTimeStampsMatch = (
   chatMessage: GoogleChatMessage,
   hangoutsEvent: HangoutsEvent
-) => {
+): boolean => {
   return (
     Math.abs(
       parseHangoutsTimestamp(hangoutsEvent.timestamp) -
@@ -137,6 +128,16 @@ const parseHangoutsTimestamp = (timestamp: number) => {
 // NOTE the timestamp must be in English, otherwise the parsing will fail
 const parseChatTimestamp = (timestamp: string) => {
   return Number(new Date(timestamp.replace('at ', '')));
+};
+
+const doesMessageTextMatch = (
+  chatMessage: GoogleChatMessage,
+  hangoutsEvent: HangoutsEvent
+): boolean => {
+  const chatMessageText = chatMessage.text;
+  const hangoutsMessageText = joinHangoutsMessageSegments(hangoutsEvent);
+
+  return chatMessageText === hangoutsMessageText;
 };
 
 // TODO: remove line breaks ("type": "LINE_BREAK",) altogether?
