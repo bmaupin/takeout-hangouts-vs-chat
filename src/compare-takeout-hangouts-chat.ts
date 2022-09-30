@@ -85,31 +85,6 @@ const readJSONFile = async (pathToFile: string) => {
   return JSON.parse(rawHangoutsFile);
 };
 
-// TODO: move timestamp functions below next function
-// Parse a timestamp from Google Chat data, e.g. "Wednesday, September 30, 2015 at 5:53:40 PM UTC"
-// NOTE the timestamp must be in English, otherwise the parsing will fail
-const parseChatTimestamp = (timestamp: string) => {
-  return Number(new Date(timestamp.replace('at ', '')));
-};
-
-// Parse a timestamp from Google Hangouts, which is the epoch time in microseconds
-const parseHangoutsTimestamp = (timestamp: number) => {
-  return timestamp / 1000;
-};
-
-// Convert timestamps and compare them; they can differ by up to 2 seconds 🤷‍♂️
-const doTimeStampsMatch = (
-  chatMessage: GoogleChatMessage,
-  hangoutsEvent: HangoutsEvent
-) => {
-  return (
-    Math.abs(
-      parseHangoutsTimestamp(hangoutsEvent.timestamp) -
-        parseChatTimestamp(chatMessage.created_date)
-    ) < 2000
-  );
-};
-
 const isChatMessageInHangoutsData = (
   chatMessage: GoogleChatMessage,
   hangoutsData: any
@@ -138,6 +113,30 @@ const isChatMessageInHangoutsData = (
   }
 
   return false;
+};
+
+// Convert timestamps and compare them; they can differ by up to 2 seconds 🤷‍♂️
+const doTimeStampsMatch = (
+  chatMessage: GoogleChatMessage,
+  hangoutsEvent: HangoutsEvent
+) => {
+  return (
+    Math.abs(
+      parseHangoutsTimestamp(hangoutsEvent.timestamp) -
+        parseChatTimestamp(chatMessage.created_date)
+    ) < 2000
+  );
+};
+
+// Parse a timestamp from Google Hangouts, which is the epoch time in microseconds
+const parseHangoutsTimestamp = (timestamp: number) => {
+  return timestamp / 1000;
+};
+
+// Parse a timestamp from Google Chat data, e.g. "Wednesday, September 30, 2015 at 5:53:40 PM UTC"
+// NOTE the timestamp must be in English, otherwise the parsing will fail
+const parseChatTimestamp = (timestamp: string) => {
+  return Number(new Date(timestamp.replace('at ', '')));
 };
 
 // TODO: remove line breaks ("type": "LINE_BREAK",) altogether?
