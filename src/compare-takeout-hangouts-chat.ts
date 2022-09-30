@@ -52,9 +52,10 @@ const main = async () => {
   console.log(`Found ${chatGroups.length} Chat groups`);
 
   for (const chatGroup of chatGroups) {
-    // TODO: remove this
-    console.log('chatGroup=', chatGroup);
+    // TODO: remove all this?
     let matchedCount = 0;
+    let messageCount = 0;
+
     // TODO: remove this restriction
     if (chatGroup.startsWith('DM')) {
       const chatGroupMessages = await readJSONFile(
@@ -81,14 +82,17 @@ const main = async () => {
             'https://hangouts.google.com'
           )
         ) {
+          messageCount++;
           if (isChatMessageInHangoutsData(chatMessage, hangoutsConversations)) {
             matchedCount++;
           }
         }
       }
     }
-    // TODO: remove this once we get it working
-    console.log('matchedCount=', matchedCount);
+
+    console.log(
+      `Matched ${matchedCount}/${messageCount} text messages in group ${chatGroup}`
+    );
     break;
   }
 };
@@ -108,14 +112,17 @@ const isChatMessageInHangoutsData = (
         doTimeStampsMatch(chatMessage, hangoutsEvent) &&
         doesMessageTextMatch(chatMessage, hangoutsEvent)
       ) {
-        console.log(hangoutsEvent);
-        console.log(hangoutsEvent.chat_message?.message_content.segment);
-        console.log(chatMessage);
+        // console.log(hangoutsEvent);
+        // console.log(hangoutsEvent.chat_message?.message_content.segment);
+        // console.log(chatMessage);
         return true;
       }
     }
   }
 
+  // console.log(hangoutsEvent);
+  // console.log(hangoutsEvent.chat_message?.message_content.segment);
+  console.log(chatMessage);
   return false;
 };
 
