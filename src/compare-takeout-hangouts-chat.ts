@@ -88,9 +88,7 @@ const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
         //   parseChatTimestamp(chatMessage.created_date) ||
         //   parseHangoutsTimestamp(hangoutsEvent.timestamp) + 1000 ===
         //     parseChatTimestamp(chatMessage.created_date)) &&
-        hangoutsEvent.chat_message?.message_content.segment &&
-        hangoutsEvent.chat_message?.message_content.segment[0].text ===
-          chatMessage.text
+        joinHangoutsMessageSegments(hangoutsEvent) === chatMessage.text
       ) {
         console.log(hangoutsEvent);
         console.log(hangoutsEvent.chat_message?.message_content.segment);
@@ -101,6 +99,13 @@ const isChatMessageInHangoutsData = (chatMessage: any, hangoutsData: any) => {
   }
 
   return false;
+};
+
+// TODO: remove line breaks ("type": "LINE_BREAK",) altogether?
+const joinHangoutsMessageSegments = (hangoutsEvent: any): string => {
+  return hangoutsEvent.chat_message?.message_content.segment
+    ?.map((segment: any) => segment.text)
+    .join('');
 };
 
 main();
