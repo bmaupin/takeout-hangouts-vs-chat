@@ -13,7 +13,8 @@ interface GoogleChatMessageAnnotation {
 
 interface GoogleChatMessage {
   annotations?: GoogleChatMessageAnnotation[];
-  created_date: string;
+  created_date?: string;
+  previous_message_versions?: GoogleChatMessage[];
   text: string;
 }
 
@@ -170,10 +171,20 @@ const doTimeStampsMatch = (
   chatMessage: GoogleChatMessage,
   hangoutsEvent: HangoutsEvent
 ): boolean => {
+  let createdDate = '';
+
+  if (chatMessage.created_date) {
+    createdDate = chatMessage.created_date;
+  } else if (chatMessage.previous_message_versions?.[0].created_date) {
+    createdDate = chatMessage.previous_message_versions[0].created_date;
+  } else {
+    return false;
+  }
+
   return (
     Math.abs(
       parseHangoutsTimestamp(hangoutsEvent.timestamp) -
-        parseChatTimestamp(chatMessage.created_date)
+        parseChatTimestamp(createdDate)
     ) < 2000
   );
 };
