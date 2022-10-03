@@ -41,11 +41,11 @@ const main = async () => {
 
   const takeoutDirectory = process.argv[2];
 
-  const hangoutsConversations = await readJSONFile(
+  const hangoutsData = await readJSONFile(
     path.join(takeoutDirectory, 'Google Hangouts/Hangouts.json')
   );
   console.log(
-    `Found ${hangoutsConversations.conversations.length} Hangouts conversations`
+    `Found ${hangoutsData.conversations.length} Hangouts conversations`
   );
 
   const chatGroups = await readdir(
@@ -87,14 +87,17 @@ const main = async () => {
         )
       ) {
         messageCount++;
-        if (
-          isChatMessageInHangoutsData(
-            chatMessage,
-            hangoutsConversations,
-            matchedEventIds
-          )
-        ) {
+        if (deleteMatchingMessage(chatMessage, hangoutsData, matchedEventIds)) {
           matchedCount++;
+          // DEBUGGING: Get a count of all Hangouts messages
+          // console.log(
+          //   'Hangouts events:',
+          //   hangoutsConversations.conversations.reduce(
+          //     (count: number, conversation: any) =>
+          //       count + conversation.events.length,
+          //     0
+          //   )
+          // );
         }
       }
     }
@@ -109,7 +112,7 @@ const main = async () => {
 
   console.log('Finished matching messages');
 
-  for (const hangoutsConversation of hangoutsConversations.conversations) {
+  for (const hangoutsConversation of hangoutsData.conversations) {
     for (const hangoutsEvent of hangoutsConversation.events as HangoutsEvent[]) {
       if (
         matchedEventIds.includes(hangoutsEvent.event_id) ||
@@ -128,13 +131,15 @@ const readJSONFile = async (pathToFile: string) => {
   return JSON.parse(rawHangoutsFile);
 };
 
-const isChatMessageInHangoutsData = (
+const deleteMatchingMessage = (
   chatMessage: GoogleChatMessage,
   hangoutsData: any,
   matchedEventIds: string[]
 ) => {
   for (const hangoutsConversation of hangoutsData.conversations) {
-    for (const hangoutsEvent of hangoutsConversation.events as HangoutsEvent[]) {
+    for (const [i, hangoutsEvent] of (
+      hangoutsConversation.events as HangoutsEvent[]
+    ).entries()) {
       // NOTE: interestingly enough, skipping event IDs in matchedEventIds slows this
       // down a lot! (so don't do it 😉)
       if (
@@ -144,7 +149,11 @@ const isChatMessageInHangoutsData = (
         // console.log(hangoutsEvent);
         // console.log(hangoutsEvent.chat_message?.message_content.segment);
         // console.log(chatMessage);
-        matchedEventIds.push(hangoutsEvent.event_id);
+        // matchedEventIds.push(hangoutsEvent.event_id);
+
+        // Delete the matched event from the Hangouts data
+        hangoutsConversation.events.splice(i, 1);
+
         return true;
       }
     }
