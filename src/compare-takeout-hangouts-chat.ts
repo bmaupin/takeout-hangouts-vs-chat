@@ -28,6 +28,7 @@ interface HangoutsEvent {
       segment: HangoutsMessageSegment[];
     };
   };
+  event_id: string;
   timestamp: number;
 }
 
@@ -50,6 +51,8 @@ const main = async () => {
     path.join(takeoutDirectory, 'Google Chat/Groups')
   );
   console.log(`Found ${chatGroups.length} Chat groups`);
+
+  const matchedEventIds: string[] = [];
 
   for (const chatGroup of chatGroups) {
     // TODO: remove all this?
@@ -83,8 +86,14 @@ const main = async () => {
           )
         ) {
           messageCount++;
-          if (isChatMessageInHangoutsData(chatMessage, hangoutsConversations)) {
-            matchedCount++;
+        if (
+          isChatMessageInHangoutsData(
+            chatMessage,
+            hangoutsConversations,
+            matchedEventIds
+          )
+        ) {
+          matchedCount++;
           }
         }
       }
@@ -104,10 +113,13 @@ const readJSONFile = async (pathToFile: string) => {
 
 const isChatMessageInHangoutsData = (
   chatMessage: GoogleChatMessage,
-  hangoutsData: any
+  hangoutsData: any,
+  matchedEventIds: string[]
 ) => {
   for (const hangoutsConversation of hangoutsData.conversations) {
     for (const hangoutsEvent of hangoutsConversation.events as HangoutsEvent[]) {
+      // NOTE: interestingly enough, skipping event IDs in matchedEventIds slows this
+      // down a lot! (so don't do it 😉)
       if (
         doTimeStampsMatch(chatMessage, hangoutsEvent) &&
         doesMessageTextMatch(chatMessage, hangoutsEvent)
@@ -115,6 +127,7 @@ const isChatMessageInHangoutsData = (
         // console.log(hangoutsEvent);
         // console.log(hangoutsEvent.chat_message?.message_content.segment);
         // console.log(chatMessage);
+        matchedEventIds.push(hangoutsEvent.event_id);
         return true;
       }
     }
