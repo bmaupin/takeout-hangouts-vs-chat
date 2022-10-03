@@ -160,19 +160,36 @@ const doesMessageTextMatch = (
   return chatMessageText === hangoutsMessageText;
 };
 
-// TODO: remove line breaks ("type": "LINE_BREAK",) altogether?
 const joinHangoutsMessageSegments = (hangoutsEvent: HangoutsEvent): string => {
-  return (
+  let previousPreviousSegmentText = '';
+  let previousSegmentText = '';
+
+  const joinedMessageSegments =
     hangoutsEvent.chat_message?.message_content.segment
       ?.map((segment: any) => {
+        // This is a weird one; in some rare occasions, a link will appear twice separated
+        // by a newline, only in Hangouts
+        if (
+          segment.type === 'LINK' &&
+          segment.text === previousPreviousSegmentText &&
+          previousSegmentText === '\n'
+        ) {
+          return 'DELETEME';
+        }
+
         // Some segments have missing line breaks
         if (segment.type === 'LINE_BREAK' && !segment.text) {
           segment.text = '\n';
         }
+
+        previousPreviousSegmentText = previousSegmentText;
+        previousSegmentText = segment.text;
+
         return segment.text;
       })
-      .join('') || ''
-  );
+      .join('') || '';
+
+  return joinedMessageSegments.replace('\nDELETEME', '');
 };
 
 main();
