@@ -29,6 +29,7 @@ interface HangoutsEvent {
     };
   };
   event_id: string;
+  event_type: string;
   timestamp: number;
 }
 
@@ -60,15 +61,15 @@ const main = async () => {
     let messageCount = 0;
 
     // TODO: remove this restriction
-    if (chatGroup.startsWith('DM')) {
-      const chatGroupMessages = await readJSONFile(
-        path.join(
-          takeoutDirectory,
-          'Google Chat/Groups',
-          chatGroup,
-          'messages.json'
-        )
-      );
+    // if (chatGroup.startsWith('DM')) {
+    const chatGroupMessages = await readJSONFile(
+      path.join(
+        takeoutDirectory,
+        'Google Chat/Groups',
+        chatGroup,
+        'messages.json'
+      )
+    );
 
     for (const chatMessage of chatGroupMessages.messages as GoogleChatMessage[]) {
       if (
@@ -97,11 +98,28 @@ const main = async () => {
         }
       }
     }
+    // }
 
     console.log(
       `Matched ${matchedCount}/${messageCount} text messages in group ${chatGroup}`
     );
-    break;
+    // TODO: delete this
+    // break;
+  }
+
+  console.log('Finished matching messages');
+
+  for (const hangoutsConversation of hangoutsConversations.conversations) {
+    for (const hangoutsEvent of hangoutsConversation.events as HangoutsEvent[]) {
+      if (
+        matchedEventIds.includes(hangoutsEvent.event_id) ||
+        !hangoutsEvent.chat_message
+      ) {
+        continue;
+      }
+
+      console.log('Unmatched Hangouts message:', hangoutsEvent);
+    }
   }
 };
 
