@@ -164,7 +164,13 @@ const doesMessageTextMatch = (
 const joinHangoutsMessageSegments = (hangoutsEvent: HangoutsEvent): string => {
   return (
     hangoutsEvent.chat_message?.message_content.segment
-      ?.map((segment: any) => segment.text)
+      ?.map((segment: any) => {
+        // Some segments have missing line breaks
+        if (segment.type === 'LINE_BREAK' && !segment.text) {
+          segment.text = '\n';
+        }
+        return segment.text;
+      })
       .join('') || ''
   );
 };
