@@ -122,7 +122,10 @@ const main = async () => {
         continue;
       }
 
-      console.log('Unmatched Hangouts message:', hangoutsEvent);
+      console.log(
+        'Unmatched Hangouts message:',
+        JSON.stringify(hangoutsEvent, null, 2)
+      );
     }
   }
 };
