@@ -85,7 +85,15 @@ const main = async () => {
         // Filter out links to Hangouts calls
         !chatMessage.annotations?.[0].url_metadata?.url.private_do_not_access_or_else_safe_url_wrapped_value.startsWith(
           'https://hangouts.google.com'
+        ) &&
+        // TODO: how to ignore these in Hangouts? ...
+        // Filter out location sharing
+        !chatMessage.text.includes(
+          'J\u0027ai partagé ma position avec vous dans la version classique de Hangouts'
         )
+        // TODO: is it even worth handling these?
+        // &&
+        // (!chatMessage.attached_files)
       ) {
         messageCount++;
         if (deleteMatchingMessage(chatMessage, hangoutsData, matchedEventIds)) {
@@ -93,7 +101,7 @@ const main = async () => {
           // DEBUGGING: Get a count of all Hangouts messages
           // console.log(
           //   'Hangouts events:',
-          //   hangoutsConversations.conversations.reduce(
+          //   hangoutsData.conversations.reduce(
           //     (count: number, conversation: any) =>
           //       count + conversation.events.length,
           //     0
