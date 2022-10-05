@@ -45,14 +45,43 @@ const main = async () => {
   const hangoutsData = await readJSONFile(
     path.join(takeoutDirectory, 'Google Hangouts/Hangouts.json')
   );
-  console.log(
-    `Found ${hangoutsData.conversations.length} Hangouts conversations`
+  const totalHangoutsMessages = hangoutsData.conversations.reduce(
+    (count: number, conversation: any) => count + conversation.events.length,
+    0
   );
+  console.log(`Found ${totalHangoutsMessages} Hangouts messages`);
 
   const chatGroups = await readdir(
     path.join(takeoutDirectory, 'Google Chat/Groups')
   );
-  console.log(`Found ${chatGroups.length} Chat groups`);
+  let totalChatMessages = 0;
+  for (const chatGroup of chatGroups) {
+    const chatGroupMessages = await readJSONFile(
+      path.join(
+        takeoutDirectory,
+        'Google Chat/Groups',
+        chatGroup,
+        'messages.json'
+      )
+    );
+    totalChatMessages += chatGroupMessages.messages.length;
+  }
+  console.log(`Found ${totalChatMessages} Chat messages`);
+
+  console.log(
+    `${((totalChatMessages / totalHangoutsMessages) * 100).toFixed(
+      2
+    )}% Hangouts messages in Chat\n`
+  );
+
+  console.log(
+    `Found ${hangoutsData.conversations.length} Hangouts conversations`
+  );
+  console.log(`Found ${chatGroups.length} Chat groups\n`);
+
+  console.log(
+    'Matching individual messages (this will take a really long time) ...\n'
+  );
 
   const matchedEventIds: string[] = [];
 
