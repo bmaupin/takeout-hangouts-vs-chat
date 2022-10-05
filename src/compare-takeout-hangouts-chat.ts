@@ -177,7 +177,7 @@ const deleteMatchingMessage = (
   return false;
 };
 
-// Convert timestamps and compare them; they can differ by up to 2 seconds 🤷‍♂️
+// Convert timestamps and compare them
 const doTimeStampsMatch = (
   chatMessage: GoogleChatMessage,
   hangoutsEvent: HangoutsEvent
@@ -196,7 +196,8 @@ const doTimeStampsMatch = (
     Math.abs(
       parseHangoutsTimestamp(hangoutsEvent.timestamp) -
         parseChatTimestamp(createdDate)
-    ) < 2000
+      // Timestamps can differ by up to this many milliseconds 🤷‍♂️
+    ) < 3500
   );
 };
 
