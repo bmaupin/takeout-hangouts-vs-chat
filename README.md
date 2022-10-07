@@ -13,7 +13,7 @@ Found 211462 Chat messages
 99.41% Hangouts messages in Chat
 ```
 
-It looks like nearly all the messages from Hangouts were transferred to Chat.
+It looks like nearly all the messages from Hangouts were transferred to Chat. (While I no longer care to check at this point, I remember that Hangouts registered separate messages when a call began and ended, whereas for Chat this was just one message, so that alone might account for the difference.)
 
 **However,** images, videos, and other media in Hangouts messages may not have been transferred:
 
@@ -52,3 +52,19 @@ More information: [Some notes on Google Takeout + Hangouts/Google Chat](https://
    ```
    npx ts-node src/compare-takeout-hangouts-chat.ts /path/to/Takeout/
    ```
+
+#### Postmortem
+
+If I had to do this again, I'd probably do something like this:
+
+For each group in Chats:
+
+1. Get the first message
+1. Go through all the first messages for each conversation in Hangouts and try to find a match
+   - Match timestamp
+   - Match text (probably would want an exact match)
+1. Then for each subsequent Chat message in the group, try to match each subsequent Hangouts message in order
+   - Match timestamp
+   - Match just the first part of the text
+
+This would probably allow us to better handle edge cases (line breaks, etc) and it should in theory be much faster. The current script is painfully slow because it tries to match each Chat message with every Hangouts message (out of >200k messages).
